@@ -1,4 +1,5 @@
 ﻿using System;
+using FluentAssertions;
 using NUnit.Framework;
 
 namespace Advent2015
@@ -9,7 +10,8 @@ namespace Advent2015
         [Test]
         public void Test1()
         {
-            Assert.True(true);
+            bool check = true;
+            true.Should().BeTrue();
         }
     }
 }
