@@ -55,19 +55,55 @@ namespace Advent2015
         {
             var subject = new FindsFloorNumber();
             var input = File.ReadAllText(@"C:\Projects\Homework\advent-of-code-2015\Advent2015\input-day1.txt");
-            subject.Find(input).Should().Be(42);
+            subject.Find(input).Should().Be(74);
         }
 
+        [Test]
+        public void GetBasementPosition_OneParen_1()
+        {
+            var subject = new FindsFloorNumber();
+            subject.Find(")");
+            subject.GetBasementStep().Should().Be(1);
+        }
+
+        [Test]
+        public void GetBasementStep_MultipleParens_5()
+        {
+            var subject = new FindsFloorNumber();
+            subject.Find("()())");
+            subject.GetBasementStep().Should().Be(5);
+        }
+
+        [Test]
+        public void GetBasementStep_RealInput()
+        {
+            var subject = new FindsFloorNumber();
+            var input = File.ReadAllText(@"C:\Projects\Homework\advent-of-code-2015\Advent2015\input-day1.txt");
+            subject.Find(input);
+            subject.GetBasementStep().Should().Be(1795);
+        }
 
     }
 
     public class FindsFloorNumber
     {
         private int _currentFloor ;
+        private int _steps;
+        private bool _basementFound = false;
         public int Find(string parens)
         {
             foreach (char paren in parens)
             {
+                if (_currentFloor > -1 && _basementFound == false)
+                {
+                    _steps++;
+                }
+
+                if (_currentFloor == -1)
+                {
+                    _basementFound = true;
+                }
+                
                 if (paren == '(')
                 {
                     _currentFloor++;
@@ -76,10 +112,15 @@ namespace Advent2015
                 if (paren == ')')
                 {
                     _currentFloor--;
-                }    
+                }
             }
             
             return _currentFloor;
+        }
+
+        public int GetBasementStep()
+        {
+            return _steps;
         }
     }
 }
