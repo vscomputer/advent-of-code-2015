@@ -64,7 +64,7 @@ namespace Advent2015
                 result += subject.CalculateWithSlack(dimensions);
             }
 
-            result.Should().Be(42);
+            result.Should().Be(1588178);
         }
     }
 
