@@ -192,11 +192,6 @@ namespace Advent2015
             result.Add(edges[2] * edges[0]);
             return result;
         }
-
-        public int GetRibbonAmountWithoutBow(IEnumerable<int> dimensions)
-        {
-            throw new System.NotImplementedException();
-        }
     }
 
     public class GetsDimensions
