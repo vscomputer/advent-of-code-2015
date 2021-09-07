@@ -43,7 +43,7 @@ namespace Advent2015
         {
             var mines = new MinesAdventCoins();
             int result = mines.Mine("yzbqklnj");
-            result.Should().Be(-2);
+            result.Should().Be(9962624);
         }
         
     }
