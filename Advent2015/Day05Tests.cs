@@ -77,6 +77,7 @@ namespace Advent2015
         }
 
         [Test]
+        [Ignore("Invalid on Day 2")]
         public void SampleInput_Nice_ReturnsNice()
         {
             var subject = new EvaluatesChild();
@@ -86,6 +87,7 @@ namespace Advent2015
         }
 
         [Test]
+        [Ignore("Invalid on Day 2")]
         public void SampleInput_Naughty_ReturnsNaughty()
         {
             var subject = new EvaluatesChild();
@@ -95,6 +97,7 @@ namespace Advent2015
         }
 
         [Test]
+        //[Ignore("Invalid on Day 2")]
         public void ChildIsNice_PuzzleInput_ReturnsTheAnswer()
         {
             var inputs = File.ReadAllLines(@"C:\Projects\Homework\advent-of-code-2015\Advent2015\input-day5.txt");
@@ -102,6 +105,59 @@ namespace Advent2015
             int result = inputs.Count(input => subject.ChildIsNice(input));
 
             result.Should().Be(238);
+        }
+
+        [Test]
+        public void ContainsEchoChar_Doesnt_ReturnsFalse()
+        {
+            var subject = new EvaluatesChild();
+            bool result = subject.ContainsEcho("aabbccddee");
+            result.Should().BeFalse();
+
+            subject.ContainsEcho("abcdefghi").Should().BeFalse();
+        }
+
+        [Test]
+        public void ContainsEcho_Does_ReturnsTrue()
+        {
+            var subject = new EvaluatesChild();
+            subject.ContainsEcho("xyx").Should().BeTrue();
+            subject.ContainsEcho("abcdefeghi").Should().BeTrue();
+            subject.ContainsEcho("aaa").Should().BeTrue();
+        }
+
+        [Test]
+        public void ContainsRepeatedPair_Doesnt_ReturnsFalse()
+        {
+            var subject = new EvaluatesChild();
+            bool result = subject.ContainsRepeatedPair("aad");
+            result.Should().BeFalse();
+
+            subject.ContainsRepeatedPair("ieodomkazucvgmuy").Should().BeFalse();
+        }
+
+        [Test]
+        public void ContainsRepeatedPair_Does_ReturnsTrue()
+        {
+            var subject = new EvaluatesChild();
+            bool result = subject.ContainsRepeatedPair("xyxy");
+            result.Should().BeTrue();
+            subject.ContainsRepeatedPair("aabcdefgaa").Should().BeTrue();
+        }
+
+        [Test]
+        public void Day2_SampleInput_ReturnsTrue()
+        {
+            var subject = new EvaluatesChild();
+            subject.ChildIsNice("qjhvhtzxzqqjkmpb").Should().BeTrue();
+            subject.ChildIsNice("xxyxx").Should().BeTrue();
+        }
+
+        [Test]
+        public void Day2_SampleInput_ReturnsFalse()
+        {
+            var subject = new EvaluatesChild();
+            subject.ChildIsNice("uurcxstgmygtbstg").Should().BeFalse();
         }
     }
 
@@ -147,11 +203,10 @@ namespace Advent2015
 
         public bool ChildIsNice(string input)
         {
-            bool containsThreeVowels = ContainsThreeVowels(input);
-            bool containsTwin = ContainsTwin(input);
-            bool allPairsAreNice = AllPairsAreNice(input);
+            bool containsEcho = ContainsEcho(input);
+            bool containsRepeatedPair = ContainsRepeatedPair(input);
 
-            return (containsThreeVowels && containsTwin && allPairsAreNice);
+            return containsEcho && containsRepeatedPair;
         }
 
         public bool AllPairsAreNice(string input)
@@ -163,6 +218,33 @@ namespace Advent2015
             }
 
             return true;
+        }
+
+        public bool ContainsEcho(string input)
+        {
+            for (int i = 2; i < input.Length; i++)
+            {
+                if (input[i - 2] == input[i])
+                    return true;
+            }
+
+            return false;
+        }
+
+        public bool ContainsRepeatedPair(string input)
+        {
+            for (int i = 1; i < input.Length; i++)
+            {
+                var pair = input[i - 1].ToString() + input[i].ToString();
+                if (input.Length - i < 2)
+                    return false;
+                for (int j = i + 2; j < input.Length; j++)
+                {
+                    if (pair == input[j - 1].ToString() + input[j])
+                        return true;
+                }
+            }
+            return false;
         }
     }
 }
