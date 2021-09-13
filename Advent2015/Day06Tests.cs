@@ -52,6 +52,7 @@ namespace Advent2015
         }
 
         [Test]
+        [Ignore("slow")]
         public void PuzzleInput_ReturnsAnswer()
         {
             var lines = File.ReadAllLines("C:\\Projects\\Homework\\advent-of-code-2015\\Advent2015\\input-day6.txt");
@@ -68,6 +69,7 @@ namespace Advent2015
         }
 
         [Test]
+        [Ignore("obsolete")]
         public void testingStuff()
         {
             var lines = File.ReadAllLines("C:\\Projects\\Homework\\advent-of-code-2015\\Advent2015\\day-6-simplified-1.txt");
