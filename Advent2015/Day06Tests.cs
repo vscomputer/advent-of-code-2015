@@ -167,24 +167,29 @@ namespace Advent2015
                 {
                     if (command.Type == GridCommandType.TurnOn)
                     {
-                        _cells[i, j] = 1;
+                        _cells[i, j] += 1;
                     }
 
                     if (command.Type == GridCommandType.TurnOff)
                     {
-                        _cells[i, j] = 0;
+                        _cells[i, j] -= 1;
+                        if (_cells[i, j] < 0)
+                        {
+                            _cells[i, j] = 0;
+                        }
                     }
 
                     if (command.Type == GridCommandType.Toggle)
                     {
-                        if (_cells[i, j] == 0)
-                        {
-                            _cells[i, j] = 1;
-                        }
-                        else if (_cells[i, j] == 1)
-                        {
-                            _cells[i, j] = 0;
-                        }
+                        // if (_cells[i, j] == 0)
+                        // {
+                        //     _cells[i, j] = 1;
+                        // }
+                        // else if (_cells[i, j] == 1)
+                        // {
+                        //     _cells[i, j] = 0;
+                        // }
+                        _cells[i, j] += 2;
                     }
                 }
             }
