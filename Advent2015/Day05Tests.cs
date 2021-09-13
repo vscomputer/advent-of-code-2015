@@ -97,14 +97,14 @@ namespace Advent2015
         }
 
         [Test]
-        //[Ignore("Invalid on Day 2")]
+        //[Ignore("Takes a while")]
         public void ChildIsNice_PuzzleInput_ReturnsTheAnswer()
         {
             var inputs = File.ReadAllLines(@"C:\Projects\Homework\advent-of-code-2015\Advent2015\input-day5.txt");
             var subject = new EvaluatesChild();
             int result = inputs.Count(input => subject.ChildIsNice(input));
 
-            result.Should().Be(238);
+            result.Should().Be(69);
         }
 
         [Test]
