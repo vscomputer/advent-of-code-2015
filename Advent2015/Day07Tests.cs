@@ -53,6 +53,20 @@ namespace Advent2015
             subject.WireExists("z").Should().BeTrue("it has two valid parents");
             subject.GetWireValue("z").Should().Be(72, "because that's a bitwise AND of its parents");
         }
+        
+        [Test]
+        public void ComputerWire_OrWithTwoParents_AddsWire()
+        {
+            var subject = new Circuit();
+            subject.WireExists("x").Should().BeFalse(); //precondition assertion
+            subject.WireExists("y").Should().BeFalse(); //precondition assertion
+            subject.ComputeWire("123 -> x");
+            subject.ComputeWire("456 -> y");
+
+            subject.ComputeWire("x OR y -> z");
+            subject.WireExists("z").Should().BeTrue("it has two valid parents");
+            subject.GetWireValue("z").Should().Be(507, "because that's a bitwise OR of its parents");
+        }
     }
 
     public class Circuit
@@ -82,6 +96,10 @@ namespace Advent2015
             {
                 ComputeAnd(tokens);
             }
+            else if (tokens[0].Contains("OR"))
+            {
+                ComputeOr(tokens);
+            }
             else
             {
                 ComputeSimpleWire(tokens);
@@ -92,15 +110,30 @@ namespace Advent2015
         {
             var wireKey = tokens[1].Trim();
             var splitter = new[] {"AND"};
-            var parentWire = tokens[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim())
+            var parentWire = tokens[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries)
+                .Select(p => p.Trim())
                 .ToList();
             
-
             if (_wires.ContainsKey(parentWire[0]) == false || _wires.ContainsKey(parentWire[1]) == false)
             {
                 return;
             }
             _wires.Add(wireKey, _wires[parentWire[0]] & _wires[parentWire[1]]);
+        }
+        
+        private void ComputeOr(string[] tokens)
+        {
+            var wireKey = tokens[1].Trim();
+            var splitter = new[] {"OR"};
+            var parentWire = tokens[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries)
+                .Select(p => p.Trim())
+                .ToList();
+            
+            if (_wires.ContainsKey(parentWire[0]) == false || _wires.ContainsKey(parentWire[1]) == false)
+            {
+                return;
+            }
+            _wires.Add(wireKey, _wires[parentWire[0]] | _wires[parentWire[1]]);
         }
 
         private void ComputeSimpleWire(string[] tokens)
