@@ -70,6 +70,25 @@ namespace Advent2015
             subject.GetWireValue("z").Should().Be(507, "because that's a bitwise OR of its parents");
         }
 
+        [Test]
+        public void ComputeWire_LeftShiftNoParent_DoesntAdd()
+        {
+            var subject = SetUpTestCircuit();
+            
+            subject.ComputeWire("a LSHIFT 2 -> z");
+            subject.WireExists("z").Should().BeFalse("a doesn't exist");
+        }
+
+        [Test]
+        public void ComputeWire_LeftShiftWithParent_AddsWire()
+        {
+            var subject = SetUpTestCircuit();
+            
+            subject.ComputeWire("x LSHIFT 2 -> z");
+            subject.WireExists("z").Should().BeTrue("it has a valid parent and a value");
+            subject.GetWireValue("z").Should().Be(492, "That's an LSHIFT of 2");
+        }
+
     }
 
     public class Circuit
@@ -103,10 +122,20 @@ namespace Advent2015
             {
                 ComputeBinary(tokens, "OR");
             }
+            else if (tokens[0].Contains("LSHIFT"))
+            {
+                ComputeBinary(tokens, "LSHIFT");
+            }
             else
             {
                 ComputeSimpleWire(tokens);
             }
+        }
+
+        public bool ContainsKeyOrIsInt(string parentWireOrValue)
+        {
+            int throwAway = -1;
+            return _wires.ContainsKey(parentWireOrValue) || int.TryParse(parentWireOrValue, out throwAway) == true;
         }
 
         private void ComputeBinary(string[] tokens, string op)
@@ -117,7 +146,7 @@ namespace Advent2015
                 .Select(p => p.Trim())
                 .ToList();
             
-            if (_wires.ContainsKey(parentWire[0]) == false || _wires.ContainsKey(parentWire[1]) == false)
+            if (ContainsKeyOrIsInt(parentWire[0]) == false || ContainsKeyOrIsInt(parentWire[1]) == false)
             {
                 return;
             }
@@ -129,6 +158,11 @@ namespace Advent2015
             else if (op == "OR")
             {
                 _wires.Add(wireKey, _wires[parentWire[0]] | _wires[parentWire[1]]);
+            }
+            else if (op == "LSHIFT")
+            {
+                int.TryParse(parentWire[1], out var shiftAmount);
+                _wires.Add(wireKey, _wires[parentWire[0]] << shiftAmount);
             }
         }
 
