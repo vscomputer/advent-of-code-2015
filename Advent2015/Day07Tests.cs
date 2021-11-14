@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -37,6 +38,20 @@ namespace Advent2015
             
             subject.ComputeWire("x AND y -> z");
             subject.WireExists("z").Should().BeFalse("y doesn't exist so it cannot be computed yet");
+        }
+
+        [Test]
+        public void ComputerWire_AddWithTwoParents_AddsWire()
+        {
+            var subject = new Circuit();
+            subject.WireExists("x").Should().BeFalse(); //precondition assertion
+            subject.WireExists("y").Should().BeFalse(); //precondition assertion
+            subject.ComputeWire("123 -> x");
+            subject.ComputeWire("456 -> y");
+
+            subject.ComputeWire("x AND y -> z");
+            subject.WireExists("z").Should().BeTrue("it has two valid parents");
+            subject.GetWireValue("z").Should().Be(72, "because that's a bitwise AND of its parents");
         }
     }
 
@@ -77,13 +92,15 @@ namespace Advent2015
         {
             var wireKey = tokens[1].Trim();
             var splitter = new[] {"AND"};
-            var parentWire = tokens[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+            var parentWire = tokens[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim())
+                .ToList();
+            
 
             if (_wires.ContainsKey(parentWire[0]) == false || _wires.ContainsKey(parentWire[1]) == false)
             {
                 return;
             }
-            _wires.Add(wireKey, -1);
+            _wires.Add(wireKey, _wires[parentWire[0]] & _wires[parentWire[1]]);
         }
 
         private void ComputeSimpleWire(string[] tokens)
