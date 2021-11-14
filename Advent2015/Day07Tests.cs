@@ -9,6 +9,16 @@ namespace Advent2015
     [TestFixture]
     public class Day07Tests
     {
+        private static Circuit SetUpTestCircuit()
+        {
+            var subject = new Circuit();
+            subject.WireExists("x").Should().BeFalse(); //precondition assertion
+            subject.WireExists("y").Should().BeFalse(); //precondition assertion
+            subject.ComputeWire("123 -> x");
+            subject.ComputeWire("456 -> y");
+            return subject;
+        }
+        
         [Test]
         public void WireExists_NoWire_ReturnsFalse()
         {
@@ -43,12 +53,8 @@ namespace Advent2015
         [Test]
         public void ComputerWire_AddWithTwoParents_AddsWire()
         {
-            var subject = new Circuit();
-            subject.WireExists("x").Should().BeFalse(); //precondition assertion
-            subject.WireExists("y").Should().BeFalse(); //precondition assertion
-            subject.ComputeWire("123 -> x");
-            subject.ComputeWire("456 -> y");
-
+            var subject = SetUpTestCircuit();
+            
             subject.ComputeWire("x AND y -> z");
             subject.WireExists("z").Should().BeTrue("it has two valid parents");
             subject.GetWireValue("z").Should().Be(72, "because that's a bitwise AND of its parents");
@@ -57,16 +63,13 @@ namespace Advent2015
         [Test]
         public void ComputerWire_OrWithTwoParents_AddsWire()
         {
-            var subject = new Circuit();
-            subject.WireExists("x").Should().BeFalse(); //precondition assertion
-            subject.WireExists("y").Should().BeFalse(); //precondition assertion
-            subject.ComputeWire("123 -> x");
-            subject.ComputeWire("456 -> y");
-
+            var subject = SetUpTestCircuit();
+            
             subject.ComputeWire("x OR y -> z");
             subject.WireExists("z").Should().BeTrue("it has two valid parents");
             subject.GetWireValue("z").Should().Be(507, "because that's a bitwise OR of its parents");
         }
+
     }
 
     public class Circuit
