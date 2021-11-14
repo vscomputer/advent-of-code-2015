@@ -94,11 +94,11 @@ namespace Advent2015
 
             if (tokens[0].Contains("AND"))
             {
-                ComputeAnd(tokens);
+                ComputeBinary(tokens, "AND");
             }
             else if (tokens[0].Contains("OR"))
             {
-                ComputeOr(tokens);
+                ComputeBinary(tokens, "OR");
             }
             else
             {
@@ -106,10 +106,10 @@ namespace Advent2015
             }
         }
 
-        private void ComputeAnd(string[] tokens)
+        private void ComputeBinary(string[] tokens, string op)
         {
             var wireKey = tokens[1].Trim();
-            var splitter = new[] {"AND"};
+            var splitter = new[] {op};
             var parentWire = tokens[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries)
                 .Select(p => p.Trim())
                 .ToList();
@@ -118,22 +118,15 @@ namespace Advent2015
             {
                 return;
             }
-            _wires.Add(wireKey, _wires[parentWire[0]] & _wires[parentWire[1]]);
-        }
-        
-        private void ComputeOr(string[] tokens)
-        {
-            var wireKey = tokens[1].Trim();
-            var splitter = new[] {"OR"};
-            var parentWire = tokens[0].Split(splitter, StringSplitOptions.RemoveEmptyEntries)
-                .Select(p => p.Trim())
-                .ToList();
-            
-            if (_wires.ContainsKey(parentWire[0]) == false || _wires.ContainsKey(parentWire[1]) == false)
+
+            if (op == "AND")
             {
-                return;
+                _wires.Add(wireKey, _wires[parentWire[0]] & _wires[parentWire[1]]);
             }
-            _wires.Add(wireKey, _wires[parentWire[0]] | _wires[parentWire[1]]);
+            else if (op == "OR")
+            {
+                _wires.Add(wireKey, _wires[parentWire[0]] | _wires[parentWire[1]]);
+            }
         }
 
         private void ComputeSimpleWire(string[] tokens)
