@@ -112,7 +112,7 @@ namespace Advent2015
 
         public int Count(string input)
         {
-            if (string.IsNullOrWhiteSpace(input)) return _positions.Distinct().Count();
+            if (string.IsNullOrWhiteSpace(input)) return _positions.Count();
             
             foreach (var move in input)
             {
@@ -148,8 +148,8 @@ namespace Advent2015
 
         public int CountWithRobot(string input)
         {
-            if (string.IsNullOrWhiteSpace(input)) return _positions.Distinct().Count();
-            if (string.IsNullOrWhiteSpace(input)) return _positions.Distinct().Count();
+            if (string.IsNullOrWhiteSpace(input)) return _positions.Count();
+            if (string.IsNullOrWhiteSpace(input)) return _positions.Count();
             int steps = input.Length;
 
             for (int i = 0; i < steps; i++)

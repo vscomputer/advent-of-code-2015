@@ -48,7 +48,7 @@ namespace Advent2015
 
             var subject = new LightGrid();
             subject.ProcessCommand(command);
-            subject.SumOfLitCells().Should().Be(1000000);
+            subject.SumOfLitCells().Should().Be(1_000_000);
         }
 
         [Test]
@@ -146,7 +146,7 @@ namespace Advent2015
 
     public class LightGrid
     {
-        private int[,] _cells = new int[1000,1000];
+        private readonly int[,] _cells = new int[1000,1000];
         public int SumOfLitCells()
         {
             int result = 0;
