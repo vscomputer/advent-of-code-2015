@@ -27,17 +27,17 @@ namespace Advent2015
             result.Should().BeFalse("No wires have been defined yet");
         }
 
-        // [Test]
-        // public void ComputeWire_Simple_AddsWireAndValue()
-        // {
-        //     //123 -> x
-        //     var subject = new Circuit();
-        //     subject.WireExists("x").Should().BeFalse(); //precondition assertion
-        //     subject.ComputeWire("123 -> x");
-        //     
-        //     subject.WireExists("x").Should().BeTrue("the wire was added");
-        //     subject.GetWireValue("x").Should().Be(123);
-        // }
+        [Test]
+        public void ComputeWire_Simple_AddsWireAndValue()
+        {
+            //123 -> x
+            var subject = new Circuit();
+            subject.WireExists("x").Should().BeFalse(); //precondition assertion
+            subject.ComputeWire("123 -> x");
+            
+            subject.WireExists("x").Should().BeTrue("the wire was added");
+            subject.GetWireValue("x").Should().Be(123);
+        }
         //
         // [Test]
         // public void ComputeWire_NoParentWireTwo_DoesntAddWire()
@@ -122,9 +122,37 @@ namespace Advent2015
 
     public class Circuit
     {
+        private Dictionary<string, ushort> _wires;
+
+        public Circuit()
+        {
+            _wires = new Dictionary<string, ushort>();
+        }
+        
         public bool WireExists(string wire)
         {
-            return false;
+            return _wires.ContainsKey(wire);
+        }
+
+        public void ComputeWire(string command)
+        {
+            List<string> tokens = SplitCommandIntoTokens(command);
+            bool couldParse = ushort.TryParse(tokens[0], out var result);
+            if (couldParse)
+            {
+                _wires.Add(tokens[2], result);
+            }
+        }
+
+        private List<string> SplitCommandIntoTokens(string command)
+        {
+            return command.Split(new char[]{' '}, StringSplitOptions.None).ToList();
+        }
+
+        public ushort GetWireValue(string wire)
+        {
+            _wires.TryGetValue(wire, out var result);
+            return result;
         }
     }
 }
