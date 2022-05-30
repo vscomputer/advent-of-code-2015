@@ -48,10 +48,11 @@ namespace Advent2015
 
             var subject = new LightGrid();
             subject.ProcessCommand(command);
-            subject.SumOfLitCells().Should().Be(1000000);
+            subject.SumOfLitCells().Should().Be(1_000_000);
         }
 
         [Test]
+        [Ignore("slow")]
         public void PuzzleInput_ReturnsAnswer()
         {
             var lines = File.ReadAllLines("C:\\Projects\\Homework\\advent-of-code-2015\\Advent2015\\input-day6.txt");
@@ -68,6 +69,7 @@ namespace Advent2015
         }
 
         [Test]
+        [Ignore("obsolete")]
         public void testingStuff()
         {
             var lines = File.ReadAllLines("C:\\Projects\\Homework\\advent-of-code-2015\\Advent2015\\day-6-simplified-1.txt");
@@ -144,7 +146,7 @@ namespace Advent2015
 
     public class LightGrid
     {
-        private int[,] _cells = new int[1000,1000];
+        private readonly int[,] _cells = new int[1000,1000];
         public int SumOfLitCells()
         {
             int result = 0;
