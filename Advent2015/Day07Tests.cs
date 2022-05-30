@@ -184,7 +184,7 @@ namespace Advent2015
                 "C:\\Projects\\Homework\\advent-of-code-2015\\Advent2015\\input-day7.txt");
 
             //subject.GetNumberOfWires().Should().Be(0);
-            subject.GetWireValue("a").Should().Be(1);
+            subject.GetWireValue("a").Should().Be(46065);
         }
 
         [Test]
@@ -218,30 +218,14 @@ namespace Advent2015
         public bool ComputeWire(string command)
         {
             var tokens = SplitCommandIntoTokens(command);
-            ushort result;
-            var couldParse = ushort.TryParse(tokens[0], out var parseResult);
-            var inWires = _wires.TryGetValue(tokens[0], out var wireResult);
+
             if (tokens[1] == "->")
             {
-                if (couldParse)
-                {
-                    _wires.Add(tokens[2], parseResult);
-                    return true;
-                }
-                else if (inWires)
-                {
-                    _wires.Add(tokens[2], wireResult);
-                    return true;
-                }
+                if (ProcessLiteralAssignment(tokens)) return true;
             }
             else if (tokens[0] == "NOT")
             {
-                var notParentExists = _wires.TryGetValue(tokens[1], out var lValue);
-                if (notParentExists)
-                {
-                    _wires.Add(tokens[3], (ushort) ~lValue);
-                    return true;
-                }
+                return ProcessNot(tokens);
             }
             else
             {
@@ -251,28 +235,51 @@ namespace Advent2015
             return false;
         }
 
+        private bool ProcessLiteralAssignment(List<string> tokens)
+        {
+            ushort result;
+            if (ushort.TryParse(tokens[0], out result))
+            {
+                _wires.Add(tokens[2], result);
+                return true;
+            }
+            else if (_wires.TryGetValue(tokens[0], out result))
+            {
+                _wires.Add(tokens[2], result);
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool ProcessNot(List<string> tokens)
+        {
+            var notParentExists = _wires.TryGetValue(tokens[1], out var lValue);
+            if (!notParentExists) return false;
+            _wires.Add(tokens[3], (ushort) ~lValue);
+            return true;
+        }
+
         private bool ComputeGate(List<string> tokens)
         {
-            int garbage;
-            if (!int.TryParse(tokens[0], out garbage) && !_wires.ContainsKey(tokens[0]))
+            if (!int.TryParse(tokens[0], out _) && !_wires.ContainsKey(tokens[0]))
                 return false;
-            if (!int.TryParse(tokens[2], out garbage) && !_wires.ContainsKey(tokens[2]))
-                return false; //can't compute a gate unless both parent wires are present
+            if (!int.TryParse(tokens[2], out _) && !_wires.ContainsKey(tokens[2]))
+                return false; //can't compute a gate unless both parent wires or a literal is present
 
             
-            if(!_wires.TryGetValue(tokens[0], out ushort lvalue))
+            if(!_wires.TryGetValue(tokens[0], out ushort lvalue)) // not in wires
             {
                 lvalue = ushort.Parse(tokens[0]);
             }
-            if (tokens[1] == "LSHIFT")
+            switch (tokens[1])
             {
-                _wires.Add(tokens[4], (ushort)(lvalue << int.Parse(tokens[2])));
-                return true;
-            }
-            if (tokens[1] == "RSHIFT")
-            {
-                _wires.Add(tokens[4], (ushort)(lvalue >> int.Parse(tokens[2])));
-                return true;
+                case "LSHIFT":
+                    _wires.Add(tokens[4], (ushort)(lvalue << int.Parse(tokens[2])));
+                    return true;
+                case "RSHIFT":
+                    _wires.Add(tokens[4], (ushort)(lvalue >> int.Parse(tokens[2])));
+                    return true;
             }
 
 
@@ -280,23 +287,22 @@ namespace Advent2015
             {
                 rvalue = ushort.Parse(tokens[2]);
             }
-            if (tokens[1] == "AND")
+            switch (tokens[1])
             {
-                _wires.Add(tokens[4], (ushort)(lvalue & rvalue));
-                return true;
+                case "AND":
+                    _wires.Add(tokens[4], (ushort)(lvalue & rvalue));
+                    return true;
+                case "OR":
+                    _wires.Add(tokens[4], (ushort)(lvalue | rvalue));
+                    return true;
+                default:
+                    return false;
             }
-            if (tokens[1] == "OR")
-            {
-                _wires.Add(tokens[4], (ushort)(lvalue | rvalue));
-                return true;
-            }
-
-            return false;
         }
 
         private List<string> SplitCommandIntoTokens(string command)
         {
-            return command.Split(new char[]{' '}, StringSplitOptions.None).ToList();
+            return command.Split(new[]{' '}, StringSplitOptions.None).ToList();
         }
 
         public ushort GetWireValue(string wire)
@@ -308,13 +314,11 @@ namespace Advent2015
         public void ComputeAllWiresInFile(string textFile)
         {
             var commands = File.ReadAllLines(textFile).ToList();
-            var commandCount = commands.Count;
             while (commands.Count > 0)
             {
                 var commandsToRemove = new List<string>();
                 foreach (var command in commands)
                 {
-                    
                     var succeeded = ComputeWire(command);
                     if (succeeded)
                     {
