@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
@@ -62,6 +63,19 @@ namespace Advent2015
             
             subject.ComputeWire("x AND y -> z");
             subject.WireExists("z").Should().BeFalse("y doesn't exist so it cannot be computed yet");
+        }
+
+        [Test]
+        public void ComputeWire_WireToWire_AddsWire()
+        {
+            var subject = new Circuit();
+            subject.WireExists("x").Should().BeFalse(); //precondition assertion
+            subject.ComputeWire("123 -> x");
+
+            subject.ComputeWire("x -> a");
+
+            subject.WireExists("a").Should().BeTrue();
+            subject.GetWireValue("a").Should().Be(123);
         }
         
         
@@ -134,11 +148,62 @@ namespace Advent2015
             subject.GetWireValue("z").Should().Be(65412, "that's a NOT of x");
         }
 
+        [Test]
+        public void ComputeWire_LiteralIsFirst_DoesntAddWire()
+        {
+            var subject = SetUpTestCircuit();
+
+            subject.ComputeWire("1 AND cx -> cy");
+            subject.WireExists("cy").Should().BeFalse("cx is not a valid parent");
+        }
+
+        [Test]
+        public void ComputeAllWiresInFile_SampleInput_GetsSampleAnswer()
+        {
+            var subject = new Circuit();
+
+            subject.ComputeAllWiresInFile(
+                "C:\\Projects\\Homework\\advent-of-code-2015\\Advent2015\\day-7-sample-input.txt");
+
+            subject.GetWireValue("d").Should().Be(72, "that's a supported AND statement");
+            subject.GetWireValue("e").Should().Be(507, "that's a supported OR statement");
+            subject.GetWireValue("f").Should().Be(492, "that's a supported LSHIFT statement");
+            subject.GetWireValue("g").Should().Be(114, "that's a supported RSHIFT statement");
+            subject.GetWireValue("h").Should().Be(65412, "that's a supported NOT statement");
+            subject.GetWireValue("i").Should().Be(65079, "that's a supported NOT statement");
+            subject.GetWireValue("x").Should().Be(123, "it's part of setting up");
+            subject.GetWireValue("y").Should().Be(456, "it's part of setting up");
+        }
+
+        [Test]
+        public void ComputeAllWiresInFile_RealInputNoRetry_GetsAnswerMaybe()
+        {
+            var subject = new Circuit();
+
+            subject.ComputeAllWiresInFile(
+                "C:\\Projects\\Homework\\advent-of-code-2015\\Advent2015\\input-day7.txt");
+
+            //subject.GetNumberOfWires().Should().Be(0);
+            subject.GetWireValue("a").Should().Be(1);
+        }
+
+        [Test]
+        public void ComputeWire_1And2_ResultIs3()
+        {
+            var subject = new Circuit();
+
+            subject.ComputeWire("1 AND 3 -> a");
+
+            subject.WireExists("a").Should()
+                .BeTrue("because apparently this is valid even though the docs say it isn't");
+            subject.GetWireValue("a").Should().Be(1);
+        }
+
     }
 
     public class Circuit
     {
-        private Dictionary<string, ushort> _wires;
+        private readonly Dictionary<string, ushort> _wires;
 
         public Circuit()
         {
@@ -150,13 +215,24 @@ namespace Advent2015
             return _wires.ContainsKey(wire);
         }
 
-        public void ComputeWire(string command)
+        public bool ComputeWire(string command)
         {
             var tokens = SplitCommandIntoTokens(command);
-            var couldParse = ushort.TryParse(tokens[0], out var result);
-            if (couldParse)
+            ushort result;
+            var couldParse = ushort.TryParse(tokens[0], out var parseResult);
+            var inWires = _wires.TryGetValue(tokens[0], out var wireResult);
+            if (tokens[1] == "->")
             {
-                _wires.Add(tokens[2], result);
+                if (couldParse)
+                {
+                    _wires.Add(tokens[2], parseResult);
+                    return true;
+                }
+                else if (inWires)
+                {
+                    _wires.Add(tokens[2], wireResult);
+                    return true;
+                }
             }
             else if (tokens[0] == "NOT")
             {
@@ -164,45 +240,58 @@ namespace Advent2015
                 if (notParentExists)
                 {
                     _wires.Add(tokens[3], (ushort) ~lValue);
+                    return true;
                 }
             }
             else
             {
-                ComputeGate(tokens);
+                return ComputeGate(tokens);
             }
+
+            return false;
         }
 
-        private void ComputeGate(List<string> tokens)
+        private bool ComputeGate(List<string> tokens)
         {
-            if (!_wires.ContainsKey(tokens[0]))
-                return;
-            if (!int.TryParse(tokens[2], out int garbage) && !_wires.ContainsKey(tokens[2]))
-                return; //can't compute a gate unless both parent wires are present
+            int garbage;
+            if (!int.TryParse(tokens[0], out garbage) && !_wires.ContainsKey(tokens[0]))
+                return false;
+            if (!int.TryParse(tokens[2], out garbage) && !_wires.ContainsKey(tokens[2]))
+                return false; //can't compute a gate unless both parent wires are present
+
             
-            _wires.TryGetValue(tokens[0], out ushort lvalue);
+            if(!_wires.TryGetValue(tokens[0], out ushort lvalue))
+            {
+                lvalue = ushort.Parse(tokens[0]);
+            }
             if (tokens[1] == "LSHIFT")
             {
                 _wires.Add(tokens[4], (ushort)(lvalue << int.Parse(tokens[2])));
-                return;
+                return true;
             }
             if (tokens[1] == "RSHIFT")
             {
                 _wires.Add(tokens[4], (ushort)(lvalue >> int.Parse(tokens[2])));
-                return;
+                return true;
             }
 
-            
-            _wires.TryGetValue(tokens[2], out ushort rvalue);
+
+            if (!_wires.TryGetValue(tokens[2], out ushort rvalue))
+            {
+                rvalue = ushort.Parse(tokens[2]);
+            }
             if (tokens[1] == "AND")
             {
                 _wires.Add(tokens[4], (ushort)(lvalue & rvalue));
-                return;
+                return true;
             }
             if (tokens[1] == "OR")
             {
                 _wires.Add(tokens[4], (ushort)(lvalue | rvalue));
-                return;
+                return true;
             }
+
+            return false;
         }
 
         private List<string> SplitCommandIntoTokens(string command)
@@ -214,6 +303,35 @@ namespace Advent2015
         {
             _wires.TryGetValue(wire, out var result);
             return result;
+        }
+
+        public void ComputeAllWiresInFile(string textFile)
+        {
+            var commands = File.ReadAllLines(textFile).ToList();
+            var commandCount = commands.Count;
+            while (commands.Count > 0)
+            {
+                var commandsToRemove = new List<string>();
+                foreach (var command in commands)
+                {
+                    
+                    var succeeded = ComputeWire(command);
+                    if (succeeded)
+                    {
+                        commandsToRemove.Add(command);
+                    }
+                }
+
+                foreach (var commandToRemove in commandsToRemove)
+                {
+                    commands.Remove(commandToRemove);
+                }
+            }
+        }
+
+        public int GetNumberOfWires()
+        {
+            return _wires.Count;
         }
     }
 }
