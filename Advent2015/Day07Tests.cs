@@ -184,7 +184,7 @@ namespace Advent2015
                 "C:\\Projects\\Homework\\advent-of-code-2015\\Advent2015\\input-day7.txt");
 
             //subject.GetNumberOfWires().Should().Be(0);
-            subject.GetWireValue("a").Should().Be(46065);
+            subject.GetWireValue("a").Should().Be(14134); //was 46065
         }
 
         [Test]
